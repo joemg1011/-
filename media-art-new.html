@@ -2,39 +2,36 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>바람이 머무는 오후</title>
-  <style>
-    :root{--ink:#3e3540;--paper:#f8efd9;--coral:#d76f61}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#e8d5b5;color:var(--ink);font-family:Georgia,'Malgun Gothic',serif}body{overflow:hidden}.art{position:relative;width:100vw;height:100vh;min-height:560px;background:#e8d5b5}.art:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.2;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");mix-blend-mode:multiply}.scene{display:block;width:100%;height:100%;cursor:none}.intro{position:absolute;z-index:2;left:clamp(22px,6vw,92px);top:clamp(24px,7vh,70px);pointer-events:none}.eyebrow{margin:0 0 10px;color:#8e625c;font:700 11px/1.2 Arial,sans-serif;letter-spacing:.24em;text-transform:uppercase}.intro h1{max-width:480px;margin:0;color:#514451;font-size:clamp(2rem,5vw,4.6rem);font-weight:400;line-height:.96;letter-spacing:-.04em}.intro p{margin:18px 0 0;color:#725d5d;font-size:clamp(.84rem,1.3vw,1rem);line-height:1.6}.hint{display:none}
-    @media(max-width:650px){.intro h1{max-width:260px}.intro p{max-width:230px}}
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f9efdc">
+  <meta name="description" content="연필로 그린 봄날, 손끝의 바람을 따라 벚꽃이 흩날리는 인터랙티브 미디어아트.">
+  <title>바람이 머무는 오후 — A Wind Study</title>
+  <link rel="preload" href="assets/spring-landscape.webp" as="image">
+  <link rel="stylesheet" href="assets/art.css?v=20261124">
+  <script type="module" src="assets/art.mjs?v=20261124"></script>
 </head>
 <body>
-  <main class="art">
-    <canvas id="scene" class="scene" aria-label="마우스로 바람을 움직이는 벚꽃나무 아래 소녀 미디어 아트"></canvas>
-    <div class="intro"><p class="eyebrow">A wind study · 01</p><h1>바람이 머무는<br>오후</h1><p>커서를 움직여 봄의 방향을<br>조용히 바꿔보세요.</p></div>
+  <main class="art" id="art" data-state="loading" data-assets="loading" aria-labelledby="art-title">
+    <img class="landscape" id="landscape" src="assets/spring-landscape.webp" alt="" fetchpriority="high" aria-hidden="true">
+    <div class="sky-veil" aria-hidden="true"></div>
+    <canvas id="scene" class="scene" tabindex="0" role="img" aria-label="벚꽃나무 아래 소녀와 바람에 흩날리는 꽃잎" aria-describedby="interaction-help">벚꽃나무 아래 소녀가 서 있는 따뜻한 연필화입니다.</canvas>
+    <header class="intro">
+      <p class="eyebrow">A WIND STUDY <span aria-hidden="true">/</span> 01</p>
+      <h1 id="art-title"><span>바람이</span><span>머무는 오후</span></h1>
+      <p class="intro-copy">작은 바람에도, 봄은 움직이니까.<br>당신의 손끝으로 이 오후를 흔들어 보세요.</p>
+      <span class="edition">SPRING, IN COLORED PENCIL</span>
+    </header>
+    <footer class="footer">
+      <p class="caption">잠시, 이 계절에 머물러도 좋아요.<span id="interaction-help">커서 또는 손끝으로 바람을 · 화면을 누르면 꽃바람</span></p>
+      <div class="controls" aria-label="미디어아트 조작">
+        <button id="gust" type="button" aria-label="꽃바람 불어주기"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7h11c4 0 4-5 1-5-2 0-3 2-2 3M2 11h14c4 0 3 6 0 6-2 0-3-2-2-3M2 15h5"/></svg>바람 불어주기</button>
+        <button id="pause" type="button" aria-label="애니메이션 일시정지" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path id="pause-icon" d="M7 4v12M13 4v12"/></svg><span id="pause-label">잠시 멈춤</span></button>
+      </div>
+    </footer>
+    <p class="loading-note" id="loading-note" role="status">봄날을 펼치는 중…</p>
+    <p class="notice" id="notice" role="status" aria-live="polite"></p>
+    <span class="sr-only">그림에 초점을 맞추고 방향키로 바람의 방향을, Enter로 꽃바람을, Space로 일시정지를 조절할 수 있습니다.</span>
+    <noscript>움직이는 꽃잎을 보려면 JavaScript를 켜 주세요.</noscript>
   </main>
-  <script>
-    const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d');
-    const TAU=Math.PI*2,rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-    let W=0,H=0,dpr=1,time=0,mouse={x:.72,y:.48,px:.72,py:.48,vx:0,vy:0,active:false},petals=[],blossoms=[],grass=[];
-    const palette={sky:'#dce3d4',sky2:'#d2d9ca',hill:'#b3c7af',hill2:'#8eaa91',ground:'#b6a17f',ink:'#514451',trunk:'#665049',branch:'#73534e',pink:'#d995a5',pink2:'#e9b4bb',cream:'#f9e8d2',dress:'#78969a',dressDark:'#4f747a',hair:'#493d48'};
-    function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);grass=Array.from({length:Math.ceil(W/8)},(_,i)=>({x:i*8+rand(-3,3),h:rand(12,35),lean:rand(-7,7)}));}
-    function stroke(points,color,width,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.restore();}
-    function pencilLine(points,color,width,alpha=1){stroke(points,color,width,alpha);stroke(points,color,Math.max(.45,width*.28),alpha*.45);}
-    function flower(x,y,s,rot=0){ctx.save();ctx.translate(x,y);ctx.rotate(rot);for(let i=0;i<5;i++){ctx.rotate(TAU/5);ctx.fillStyle=i%2?'#dfa0ad':palette.pink2;ctx.beginPath();ctx.ellipse(0,-s*.55,s*.34,s*.62,0,0,TAU);ctx.fill();pencilLine([[0,-s*.2],[0,-s*.72]],'#b87988',Math.max(1,s*.07),.45)}ctx.fillStyle='#d28775';ctx.beginPath();ctx.arc(0,0,s*.16,0,TAU);ctx.fill();ctx.restore();}
-    function petalFromTree(){const source=blossoms[Math.floor(Math.random()*blossoms.length)];return{x:source.x+rand(-10,10),y:source.y+rand(-4,8),size:rand(3,7),phase:rand(0,TAU),speed:rand(.24,.76),vx:rand(-.12,.12),vy:rand(.4,1.1),rot:rand(0,TAU),spin:rand(-.025,.025),tone:Math.random()<.55?palette.pink:palette.pink2};}
-    function reset(){const clusters=[[0,.07,1.3],[.11,.21,1.15],[.23,.05,1.25],[.35,.2,1.12],[.47,.06,1.25],[.59,.21,1.18],[.71,.05,1.26],[.83,.2,1.18],[1,.07,1.3]];blossoms=clusters.flatMap(([cx,cy,scale],cluster)=>Array.from({length:126},(_,i)=>{const angle=i*2.39+cluster*.7;return{x:W*(cx+Math.cos(angle)*.15*scale),y:H*(cy+Math.sin(angle*1.35)*.15*scale),s:9+((i*3+cluster)%8)*1.45,rot:angle}}));petals=Array.from({length:Math.round(clamp(W/2,285,570))},petalFromTree);}
-    function drawSky(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,palette.sky);g.addColorStop(.63,palette.sky2);g.addColorStop(1,'#c8b38f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.globalAlpha=.2;ctx.fillStyle='#fff8e8';for(let i=0;i<14;i++){ctx.beginPath();ctx.ellipse((i*173+80)%W,100+(i%4)*62,90,20,0,0,TAU);ctx.fill()}ctx.globalAlpha=1;}
-    function drawHills(){ctx.fillStyle=palette.hill;ctx.beginPath();ctx.moveTo(0,H*.55);ctx.quadraticCurveTo(W*.22,H*.38,W*.43,H*.56);ctx.quadraticCurveTo(W*.68,H*.34,W,H*.54);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();ctx.fillStyle=palette.hill2;ctx.globalAlpha=.48;ctx.beginPath();ctx.moveTo(0,H*.68);ctx.quadraticCurveTo(W*.3,H*.45,W*.58,H*.66);ctx.quadraticCurveTo(W*.78,H*.5,W,H*.66);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();ctx.globalAlpha=1;}
-    function drawGround(){ctx.fillStyle=palette.ground;ctx.beginPath();ctx.moveTo(0,H*.7);ctx.quadraticCurveTo(W*.24,H*.63,W*.5,H*.72);ctx.quadraticCurveTo(W*.76,H*.61,W,H*.7);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();grass.forEach(g=>pencilLine([[g.x,H-2],[g.x+g.lean,H-g.h]],'#657d68',1.2,.52));}
-    function drawTree(){const rootX=W*.48,rootY=H*.86;ctx.save();ctx.translate(rootX,rootY);pencilLine([[0,0],[-5,-H*.18],[-2,-H*.38],[-13,-H*.58],[-8,-H*.78]],palette.trunk,22,.95);pencilLine([[-8,-H*.46],[-62,-H*.6],[-128,-H*.74],[-184,-H*.78]],palette.branch,11,.88);pencilLine([[-5,-H*.38],[43,-H*.53],[91,-H*.68],[157,-H*.77]],palette.branch,10,.88);pencilLine([[-10,-H*.6],[-25,-H*.72],[-52,-H*.84]],palette.branch,7,.82);pencilLine([[38,-H*.53],[60,-H*.68],[82,-H*.83]],palette.branch,6,.8);ctx.restore();blossoms.forEach(b=>flower(b.x,b.y,b.s,b.rot));}
-    function drawGirl(){const x=W*.54,y=H*.83,blow=(mouse.x-.5)*28,flutter=Math.sin(time*.08)*3+blow*.16;ctx.save();ctx.translate(x,y);ctx.fillStyle=palette.dressDark;ctx.beginPath();ctx.moveTo(-17,-100);ctx.quadraticCurveTo(-35,-72,-44,-12);ctx.quadraticCurveTo(-24,1,0,0);ctx.lineTo(15,-3);ctx.quadraticCurveTo(39,-34,29,-100);ctx.closePath();ctx.fill();ctx.fillStyle=palette.dress;ctx.beginPath();ctx.moveTo(-11,-103);ctx.quadraticCurveTo(-23,-72,-26,-14);ctx.quadraticCurveTo(-4,-5,23,-8);ctx.quadraticCurveTo(20,-57,12,-103);ctx.closePath();ctx.fill();pencilLine([[-12,-94],[0,-62],[7,-14]],'#b3c7c0',2,.65);pencilLine([[-17,-4],[-27+flutter,12],[-48+blow,6]],palette.dressDark,4,.9);pencilLine([[17,-7],[29+flutter,9],[53+blow,0]],palette.dressDark,4,.9);pencilLine([[-17,-2],[-19,-38]],palette.dressDark,3,.8);pencilLine([[18,-5],[16,-40]],palette.dressDark,3,.8);ctx.fillStyle=palette.cream;ctx.beginPath();ctx.arc(0,-137,24,0,TAU);ctx.fill();ctx.fillStyle=palette.hair;ctx.beginPath();ctx.moveTo(-25,-141);ctx.quadraticCurveTo(-26,-176,0,-183);ctx.quadraticCurveTo(29,-180,27,-142);ctx.quadraticCurveTo(19,-124,7,-118);ctx.lineTo(-9,-121);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(20,-163);ctx.quadraticCurveTo(45+blow,-143,39+blow,-102);ctx.quadraticCurveTo(31+blow,-83,22,-73);ctx.quadraticCurveTo(13,-95,12,-123);ctx.closePath();ctx.fill();pencilLine([[24,-151],[43+blow,-129],[49+blow,-99]],palette.hair,4,.85);pencilLine([[19,-145],[35+blow,-119],[42+blow,-91]],palette.hair,2.5,.7);pencilLine([[-16,-158],[-31+blow,-133],[-27+blow,-106]],palette.hair,3,.75);pencilLine([[4,-115],[3,-128]],'#b77578',1,.7);ctx.restore();}
-    function drawPetals(){const cursorX=mouse.x*W,cursorY=mouse.y*H;petals.forEach(p=>{const oldX=p.x,oldY=p.y,near=Math.hypot(p.x-cursorX,p.y-cursorY),influence=clamp(1-near/92,0,1);p.vx+=(mouse.vx*W*.0219)*influence;p.vy+=(mouse.vy*H*.0219)*influence;p.vx*=.994;p.vy+=(.68-p.vy)*.018;p.x+=p.vx+p.speed*.22;p.y+=p.vy+Math.sin(time*.045+p.phase)*.42;p.rot+=p.spin+p.vx*.018;if(p.y>H+30)Object.assign(p,petalFromTree());const distance=Math.hypot(p.x-oldX,p.y-oldY);ctx.save();ctx.globalAlpha=.78;if(distance<35){ctx.strokeStyle=p.tone;ctx.lineWidth=Math.max(.8,p.size*.22);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(oldX,oldY);ctx.quadraticCurveTo((oldX+p.x)/2,(oldY+p.y)/2-5,p.x,p.y);ctx.stroke()}ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.tone;ctx.beginPath();ctx.moveTo(-p.size,0);ctx.quadraticCurveTo(0,-p.size*.8,p.size,0);ctx.quadraticCurveTo(0,p.size*.8,-p.size,0);ctx.fill();pencilLine([[-p.size*.7,0],[p.size*.7,0]],'#b87988',.6,.6);ctx.restore()});}
-    function drawCursor(){if(!mouse.active)return;ctx.save();ctx.translate(mouse.x*W,mouse.y*H);ctx.rotate(Math.atan2(mouse.vy,mouse.vx)+Math.PI/2);ctx.globalAlpha=.98;for(let i=0;i<5;i++){ctx.rotate(TAU/5);ctx.fillStyle=i%2?palette.pink2:palette.pink;ctx.beginPath();ctx.ellipse(0,-10,6,10,0,0,TAU);ctx.fill();pencilLine([[0,-5],[0,-14]],'#b87988',.7,.7)}ctx.fillStyle='#d28775';ctx.beginPath();ctx.arc(0,0,4,0,TAU);ctx.fill();ctx.restore();}
-    function draw(){time++;drawSky();drawHills();drawGround();drawTree();drawPetals();drawCursor();mouse.px+=(mouse.x-mouse.px)*.04;mouse.py+=(mouse.y-mouse.py)*.04;mouse.vx*=.94;mouse.vy*=.94;requestAnimationFrame(draw);}
-    function pointer(e){const nextX=clamp(e.clientX/W,0,1),nextY=clamp(e.clientY/H,0,1);mouse.vx=clamp(nextX-mouse.x,-.16,.16);mouse.vy=clamp(nextY-mouse.y,-.16,.16);mouse.x=nextX;mouse.y=nextY;mouse.active=true;}
-    addEventListener('resize',()=>{resize();reset()});addEventListener('pointermove',pointer);addEventListener('pointerleave',()=>mouse.active=false);resize();reset();draw();
-  </script>
 </body>
 </html>

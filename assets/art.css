@@ -1,0 +1,50 @@
+:root{color-scheme:light;--ink:#554e42;--muted:#706b5a;--paper:#f9efdc;--line:rgba(85,78,66,.24)}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:var(--paper)}
+body{font-family:Georgia,'Noto Serif KR','Batang',serif;color:var(--ink)}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,canvas:focus-visible{outline:2px solid #805947;outline-offset:6px}
+.art{position:relative;isolation:isolate;width:100%;height:100svh;min-height:360px;overflow:hidden;background:var(--paper)}
+.landscape{position:absolute;max-width:none;user-select:none;pointer-events:none}
+.sky-veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,246,226,.45),transparent 48%)}
+.scene{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y}
+.intro{position:absolute;top:8%;left:6.8%;pointer-events:none;max-width:50%;z-index:2}
+.eyebrow{display:flex;align-items:center;gap:16px;margin:0 0 36px;font-family:Arial,'Malgun Gothic',sans-serif;font-size:10px;font-weight:500;letter-spacing:.22em}
+.eyebrow:before{content:'';width:32px;height:1px;background:currentColor;opacity:.65}
+h1{margin:0;font-size:clamp(48px,5.9vw,104px);font-weight:400;line-height:1.27;letter-spacing:-.065em;text-shadow:0 1px 14px #faefd957}
+h1 span{display:block}
+.intro-copy{margin:26px 0 0;font-size:clamp(12px,1.05vw,15px);line-height:2.05;letter-spacing:.025em;color:#665f50}
+.edition{display:block;margin-top:30px;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.24em;color:var(--muted)}
+.footer{position:absolute;z-index:3;left:6.8%;right:4.5%;bottom:5%;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;pointer-events:none}
+.caption{font-size:12px;line-height:1.9;margin:0;color:#514e3e;text-shadow:0 0 9px #fff5df,0 0 16px #fff5df}
+.caption span{display:block;font-family:Arial,'Malgun Gothic',sans-serif;font-size:10px;margin-top:8px;letter-spacing:.06em}
+.controls{display:flex;align-items:center;gap:0;pointer-events:auto;padding:6px;border:1px solid rgba(110,96,71,.2);border-radius:40px;background:rgba(255,249,234,.87);box-shadow:0 3px 24px #6f62420a;backdrop-filter:blur(8px);font-family:Arial,'Malgun Gothic',sans-serif}
+.controls button{display:flex;align-items:center;gap:9px;background:transparent;border:0;border-radius:28px;padding:12px 17px;font-size:11px;white-space:nowrap;cursor:pointer;min-height:44px}
+.controls button:hover{background:#88755212}
+.controls button:active{background:#88755224}
+.controls button+button{border-left:1px solid var(--line);border-top-left-radius:0;border-bottom-left-radius:0}
+.controls svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.notice{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);width:max-content;max-width:85%;padding:12px 20px;background:#fff8e8eb;border:1px solid var(--line);font-size:12px;line-height:1.7;border-radius:8px;z-index:5}
+.notice:empty{display:none}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.loading-note{position:absolute;right:5%;top:6%;font-size:11px;color:var(--muted)}
+.art[data-assets=ready] .loading-note{display:none}
+noscript{position:absolute;bottom:15%;left:7%;padding:10px;background:var(--paper)}
+@media(any-pointer:fine){.art[data-state=running] .scene{cursor:none}}
+@media(max-aspect-ratio:4/5){
+ .sky-veil{background:linear-gradient(180deg,var(--paper) 0%,#f9efdcf5 17%,#f9efdc80 31%,transparent 46%)}
+ .intro{left:8%;top:6%;max-width:84%}
+ .eyebrow{font-size:9px;margin-bottom:24px;gap:12px}
+ h1{font-size:clamp(42px,11.5vw,72px);line-height:1.22}
+ .intro-copy{font-size:12px;line-height:1.9;margin-top:18px}
+ .edition{display:none}
+ .footer{left:8%;right:8%;bottom:max(24px,env(safe-area-inset-bottom));flex-direction:column;align-items:flex-start;gap:20px}
+ .caption{font-size:11px}.caption span{font-size:9px;margin-top:5px}
+ .controls{align-self:flex-end}
+ .controls button{padding:10px 14px;font-size:10px}
+ .loading-note{top:auto;bottom:110px;right:8%}
+}
+@media(max-height:540px) and (min-aspect-ratio:4/5){
+ .intro{top:7%;left:5%}.eyebrow{margin-bottom:15px;font-size:8px}h1{font-size:clamp(36px,7vw,60px);line-height:1.15}.intro-copy{margin-top:12px;font-size:11px;line-height:1.7}.edition{display:none}.footer{left:5%;bottom:5%}.caption{font-size:10px}.caption span{display:none}.controls button{padding:8px 12px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}

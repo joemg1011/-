@@ -1,0 +1,11 @@
+{
+  "name": "a-wind-study",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "check": "node --check assets/art.mjs && node --check assets/wind-physics.mjs",
+    "dev": "node scripts/preview.mjs"
+  },
+  "engines": { "node": ">=24" }
+}
